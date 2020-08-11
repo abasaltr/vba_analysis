@@ -1,0 +1,151 @@
+Sub CalculateStock()
+
+    Dim Sheetname As String
+    
+    Dim Tick As String
+    Dim DT As Double
+    Dim Opn As Double
+    Dim Cls As Double
+    Dim Change As Double
+    Dim ChangePct As Double
+    Dim Vol As LongLong
+    
+    Dim GTickInc As String
+    Dim GTickDec As String
+    Dim GTickVol As String
+    
+    Dim GInc As Double
+    Dim GDec As Double
+    Dim GVol As LongLong
+        
+    Dim LR As Double
+    Dim LC As Double
+    Dim Row As Long
+    
+    
+    For h = 1 To Application.Sheets.Count
+      
+      Sheetname = Sheets(h).Name
+    
+      GInc = 0
+      GDec = 0
+      GVol = 0
+    
+      LR = Sheets(h).Cells(Rows.Count, 1).End(xlUp).Row
+      LC = Sheets(h).Cells(1, Columns.Count).End(xlToLeft).Column
+      
+      If (LC > 8) Then
+        For c = 9 To (LC + 1)
+            Sheets(h).Columns(9).EntireColumn.Delete Shift:=xlToLeft
+            LC = LC - 1
+        Next c
+      End If
+      
+      Row = 1
+    
+      Sheets(h).Cells(Row, LC + 2).Value = "Ticker"
+      Sheets(h).Cells(Row, LC + 3).Value = "Yearly Change"
+      Sheets(h).Cells(Row, LC + 4).Value = "Percent Change"
+      Sheets(h).Cells(Row, LC + 5).Value = "Total Stock Volume"
+    
+      Sheets(h).Cells(Row, LC + 8).Value = "Greatest Stock - " + Sheetname
+      Sheets(h).Cells(Row, LC + 9).Value = "Ticker"
+      Sheets(h).Cells(Row, LC + 10).Value = "Value"
+    
+      Row = 2
+    
+      Tick = Sheets(h).Cells(Row, 1).Value
+      DT = Sheets(h).Cells(Row, 2).Value
+      Opn = Sheets(h).Cells(Row, 3).Value
+      Cls = Sheets(h).Cells(Row, 6).Value
+      Vol = Sheets(h).Cells(Row, 7).Value
+    
+    
+      For i = 3 To LR
+    
+        If (Tick = Sheets(h).Cells(i, 1).Value) Then
+            
+            DT = Sheets(h).Cells(i, 2).Value
+            Cls = Sheets(h).Cells(i, 6).Value
+            Vol = Vol + Sheets(h).Cells(i, 7).Value
+           
+        Else
+            
+            Change = Cls - Opn
+            
+            Sheets(h).Cells(Row, LC + 2).Value = Tick
+            Sheets(h).Cells(Row, LC + 3).Value = Change
+            
+            If (Opn > 0) Then
+                ChangePct = Change / Opn
+            Else
+                ChangePct = 1
+            End If
+            
+            Sheets(h).Cells(Row, LC + 4).Value = ChangePct
+            
+            If (Change > 0) Then
+                Sheets(h).Cells(Row, LC + 3).Interior.ColorIndex = 4
+                Sheets(h).Cells(Row, LC + 4).Interior.ColorIndex = 4
+                If (GInc < ChangePct) Then
+                    GInc = ChangePct
+                    GTickInc = Tick
+                End If
+            Else
+                Sheets(h).Cells(Row, LC + 3).Interior.ColorIndex = 3
+                Sheets(h).Cells(Row, LC + 4).Interior.ColorIndex = 3
+                If (ChangePct < GDec) Then
+                    GDec = ChangePct
+                    GTickDec = Tick
+                End If
+            End If
+            
+            Sheets(h).Cells(Row, LC + 4).NumberFormat = "0.00%"
+            
+            Sheets(h).Cells(Row, LC + 5).Value = Vol
+            
+            If (GVol < Vol) Then
+                GVol = Vol
+                GTickVol = Tick
+            End If
+            
+            Tick = Sheets(h).Cells(i, 1).Value
+            DT = Sheets(h).Cells(i, 2).Value
+            Opn = Sheets(h).Cells(i, 3).Value
+            Cls = Sheets(h).Cells(i, 6).Value
+            Vol = Sheets(h).Cells(i, 7).Value
+                
+            Row = Row + 1
+            
+        End If
+         
+      Next i
+    
+      Sheets(h).Cells(Row, LC + 2).Value = Tick
+      Sheets(h).Cells(Row, LC + 3).Value = Cls - Opn
+      Sheets(h).Cells(Row, LC + 4).Value = (Cls - Opn) / Opn
+      Sheets(h).Cells(Row, LC + 5).Value = Vol
+    
+      Sheets(h).Cells(2, LC + 8).Value = "Greatest % Increase"
+      Sheets(h).Cells(3, LC + 8).Value = "Greatest % Decrease"
+      Sheets(h).Cells(4, LC + 8).Value = "Greatest Total Volume"
+    
+      Sheets(h).Cells(2, LC + 9).Value = GTickInc
+      Sheets(h).Cells(3, LC + 9).Value = GTickDec
+      Sheets(h).Cells(4, LC + 9).Value = GTickVol
+    
+      Sheets(h).Cells(2, LC + 10).Value = GInc
+      Sheets(h).Cells(2, LC + 10).NumberFormat = "0.00%"
+      Sheets(h).Cells(2, LC + 10).Interior.ColorIndex = 4
+        
+      Sheets(h).Cells(3, LC + 10).Value = GDec
+      Sheets(h).Cells(3, LC + 10).NumberFormat = "0.00%"
+      Sheets(h).Cells(3, LC + 10).Interior.ColorIndex = 3
+    
+      Sheets(h).Cells(4, LC + 10).Value = GVol
+    
+      Sheets(h).Range("J1:Q4").Columns.AutoFit
+      
+    Next h
+
+End Sub
